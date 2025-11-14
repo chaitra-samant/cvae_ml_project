@@ -1,4 +1,3 @@
-```markdown
 # CVAE CelebA Project
 
 This project trains a Conditional Variational Autoencoder (CVAE) on the CelebA dataset to generate faces based on specific attributes: **Eyeglasses**, **Smiling**, and **Mustache**.
