@@ -12,7 +12,6 @@ class CelebADataset(Dataset):
         self.img_dir = img_dir
         self.transform = transform
         self.attrs_list = attrs_list
-        # Replace -1 with 0 (not present) for all attributes
         self.df.replace(-1, 0, inplace=True)
 
     def __len__(self):
@@ -23,7 +22,6 @@ class CelebADataset(Dataset):
         img_path = os.path.join(self.img_dir, img_name)
         image = Image.open(img_path).convert("RGB")
 
-        # Original images are 178x218. Crop to 178x178 center.
         w, h = image.size
         left = (w - 178) // 2
         top = (h - 178) // 2
@@ -32,15 +30,11 @@ class CelebADataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        # Get the specific attributes we care about
         attrs = self.df.iloc[idx][self.attrs_list].values.astype(np.float32)
         
         return image, torch.from_numpy(attrs)
 
 def get_dataloader(config):
-    """
-    Creates and returns the CelebA training dataloader.
-    """
     transform = transforms.Compose([
         transforms.Resize(config.IMG_SIZE),
         transforms.CenterCrop(config.IMG_SIZE),
@@ -59,7 +53,7 @@ def get_dataloader(config):
         dataset,
         batch_size=config.BATCH_SIZE,
         shuffle=True,
-        num_workers=4, # Adjust based on your system
+        num_workers=4,
         pin_memory=True,
         drop_last=True
     )

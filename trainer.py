@@ -5,13 +5,9 @@ import torchvision.utils as vutils
 from utils import loss_function
 
 def save_samples(model, fixed_z, epoch, config):
-    """
-    Generates and saves a grid of images from the model.
-    """
     model.eval()
     with torch.no_grad():
         def gen(attr, name):
-            # Create a batch of attribute vectors
             c = torch.tensor([attr] * 64, device=config.DEVICE, dtype=torch.float32)
             gen_imgs = model.decode(fixed_z, c)
             vutils.save_image(
@@ -22,7 +18,6 @@ def save_samples(model, fixed_z, epoch, config):
                 value_range=(-1, 1)
             )
 
-        # Generate images for different attribute combinations
         gen([0,0,0], "neutral")
         gen([1,0,0], "eyeglasses_only")
         gen([0,1,0], "smiling_only")
@@ -34,13 +29,9 @@ def save_samples(model, fixed_z, epoch, config):
 
 
 def train(model, dataloader, optimizer, scheduler, config):
-    """
-    Main training loop.
-    """
     print("Starting training...")
     os.makedirs(config.SAMPLE_DIR, exist_ok=True)
     
-    # Fixed noise for consistent sample generation
     fixed_z = torch.randn(64, config.LATENT_DIM, device=config.DEVICE)
     total_steps = len(dataloader) * config.NUM_EPOCHS
     
@@ -66,7 +57,7 @@ def train(model, dataloader, optimizer, scheduler, config):
                 torch.nn.utils.clip_grad_norm_(model.parameters(), config.GRAD_CLIP_NORM)
             
             optimizer.step()
-            scheduler.step() # Step the scheduler at each batch
+            scheduler.step()
 
             total_epoch_loss += loss.item()
             pbar.set_postfix({
@@ -79,11 +70,9 @@ def train(model, dataloader, optimizer, scheduler, config):
         avg_loss = total_epoch_loss / len(dataloader)
         print(f"\n=== Epoch {epoch} | Avg Loss: {avg_loss:.2f} | LR: {scheduler.get_last_lr()[0]:.1e} ===\n")
 
-        # Save samples periodically
         if epoch % 25 == 0 or epoch == 1:
             save_samples(model, fixed_z, epoch, config)
 
-    # Save final model
     torch.save(model.state_dict(), config.MODEL_SAVE_PATH)
     print(f"\nTraining finished! Model saved as '{config.MODEL_SAVE_PATH}'")
     print(f"Check the '{config.SAMPLE_DIR}' folder for generated images.")

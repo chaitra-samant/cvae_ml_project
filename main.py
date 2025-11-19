@@ -2,7 +2,7 @@ import torch
 import torch.optim as optim
 import os
 import argparse
-import config  # Import your config file
+import config
 from dataset import get_dataloader
 from model import CVAE
 from utils import WarmupCosineLR
@@ -10,7 +10,6 @@ from trainer import train
 from download_data import download_celeba
 
 def main(args):
-    # --- 1. Update Config with Args ---
     config.NUM_EPOCHS = args.epochs
     config.BATCH_SIZE = args.batch_size
     config.LEARNING_RATE = args.lr
@@ -18,16 +17,12 @@ def main(args):
     print(f"Using device: {config.DEVICE}")
     print(f"Running for {config.NUM_EPOCHS} epochs with batch size {config.BATCH_SIZE}.")
 
-    # --- 2. Download Data ---
-    # This will download if not present, or just return the path if it is.
     try:
         data_root = download_celeba()
     except Exception as e:
         print(f"Error downloading data: {e}")
-        print("Please ensure you have a valid kaggle.json file set up.")
         return
 
-    # --- 3. Update Config with Data Paths ---
     config.DATA_ROOT = data_root
     config.IMG_DIR = os.path.join(data_root, "img_align_celeba/img_align_celeba")
     config.CSV_PATH = os.path.join(data_root, "list_attr_celeba.csv")
@@ -36,12 +31,9 @@ def main(args):
         print("Error: Could not find 'img_align_celeba' or 'list_attr_celeba.csv' in dataset directory.")
         return
 
-    # --- 4. Get Dataloader ---
     print("Loading dataset...")
     dataloader = get_dataloader(config)
     
-    # --- 5. Initialize Model, Optimizer, Scheduler ---
-    print("Initializing model...")
     model = CVAE(
         latent_dim=config.LATENT_DIM,
         num_attrs=config.NUM_ATTRS,
@@ -64,7 +56,6 @@ def main(args):
         max_lr=config.LEARNING_RATE
     )
 
-    # --- 6. Start Training ---
     train(model, dataloader, optimizer, scheduler, config)
 
 

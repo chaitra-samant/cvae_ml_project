@@ -5,10 +5,6 @@ import os
 import zipfile
 
 def loss_function(recon, x, mu, logvar, beta):
-    """
-    VAE Loss (ELBO): Reconstruction Loss + KLD
-    """
-    # Reconstruction Loss (Mean Squared Error)
     MSE = F.mse_loss(recon, x, reduction='sum') / x.size(0)
     
     # KLD (Kullback-Leibler Divergence)
@@ -19,10 +15,6 @@ def loss_function(recon, x, mu, logvar, beta):
 
 
 class WarmupCosineLR(torch.optim.lr_scheduler._LRScheduler):
-    """
-    Custom LR Scheduler: Linear warmup followed by cosine annealing.
-    (Based on your 'SafeWarmupCosine' class)
-    """
     def __init__(self, optimizer, warmup_steps, total_steps, min_lr=1e-5, max_lr=6e-4, last_epoch=-1):
         self.warmup_steps = warmup_steps
         self.total_steps = total_steps
@@ -32,20 +24,15 @@ class WarmupCosineLR(torch.optim.lr_scheduler._LRScheduler):
 
     def get_lr(self):
         if self.last_epoch < self.warmup_steps:
-            # Linear warmup
             lr_scale = (self.last_epoch + 1) / self.warmup_steps
             return [self.max_lr * lr_scale for _ in self.base_lrs]
         
-        # Cosine annealing
         progress = (self.last_epoch - self.warmup_steps) / (self.total_steps - self.warmup_steps)
         cos_val = 0.5 * (1.0 + math.cos(math.pi * progress))
         return [self.min_lr + (self.max_lr - self.min_lr) * cos_val for _ in self.base_lrs]
 
 
 def zip_images(src_dir, zip_name="images.zip"):
-    """
-    Zips all images in a directory.
-    """
     if not os.path.exists(src_dir):
         print(f"Directory not found: {src_dir}")
         return

@@ -16,8 +16,8 @@ class CVAE(nn.Module):
             nn.Conv2d(c*2, c*4, 4, 2, 1), nn.LeakyReLU(0.2), # 16 -> 8
             nn.Conv2d(c*4, c*8, 4, 2, 1), nn.LeakyReLU(0.2), # 8 -> 4
         )
-        # Final encoder feature map size: (c*8) x 4 x 4 = 1024 x 4 x 4
-        enc_output_dim = c * 8 * 4 * 4 # 1024 * 16 = 16384
+        # Final encoder feature map size: (c*8) x 4 x 4
+        enc_output_dim = c * 8 * 4 * 4
         
         self.fc_mu = nn.Linear(enc_output_dim, latent_dim)
         self.fc_logvar = nn.Linear(enc_output_dim, latent_dim)
@@ -35,14 +35,12 @@ class CVAE(nn.Module):
         )
 
     def encode(self, x, c):
-        # Tile 'c' to match spatial dimensions of 'x'
         c = c.view(-1, self.num_attrs, 1, 1)
         c = c.repeat(1, 1, x.size(2), x.size(3))
-        # Concatenate image and condition
         x_cond = torch.cat([x, c], dim=1)
         
         h = self.enc(x_cond)
-        h = h.view(x.size(0), -1) # Flatten
+        h = h.view(x.size(0), -1)
         return self.fc_mu(h), self.fc_logvar(h)
 
     def reparameterize(self, mu, logvar):
@@ -51,10 +49,9 @@ class CVAE(nn.Module):
         return mu + eps * std
 
     def decode(self, z, c):
-        # Concatenate latent vector and condition
         z_cond = torch.cat([z, c], dim=1)
         h = self.fc_dec(z_cond)
-        h = h.view(-1, 1024, 4, 4) # Reshape to feature map
+        h = h.view(-1, 1024, 4, 4)
         return self.dec(h)
 
     def forward(self, x, c):
