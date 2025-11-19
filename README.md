@@ -1,8 +1,10 @@
 # Conditional Variational Autoencoder for Face Attribute Editing
 
 ## Project Overview
-![Original](./results/output.png)
-<br>
+| Original                                     | Smiling Edit                          | Moustache Edit                         | Glasses Edit                           |
+|:---------------------------------------------:|:-------------------------------------:|:-------------------------------------:|:--------------------------------------:|
+| <img src="./results/output-Original.png" width="180"/> | <img src="./results/output-smile.png" width="180"/> | <img src="./results/output-moustache.png" width="180"/> | <img src="./results/output-glasses.png" width="180"/> |
+
 This project implements a CVAE model capable of editing facial images by adding or modifying three key attributes:
 
 - Eyeglasses
